@@ -116,10 +116,15 @@ public class GameServer {
                 if (ret == -1) {
                     // Handle disconnection
                     curNode = removeNode(curNode.client);
+                    System.out.println("Client " + curNode.uid + " disconnected");
                 } else if (ret > 0) {
 
                     sender = curNode;
                     curUid = curNode.uid;
+                    System.out.println("Received a valid input stream");
+                    System.out.println("Prev Turn: " + prevTurn + " Cur Turn: " + curTurn);
+                    System.out.println("Prev Uid: " + prevUid + " Cur Uid: " + curUid);
+                    System.out.println("Cur Node Uid: " +curNode.uid);
                     // Determine whose move it is and send it
                     if (prevTurn == curTurn && prevUid != curUid && (curNode.uid == 1 || curNode.uid == 2)) {
                         /* 
@@ -131,11 +136,18 @@ public class GameServer {
                         Gson gson = new Gson();
                         Move curMove = gson.fromJson(json, Move.class);
                         */
+                        System.out.println("Passed the user check");
+
 
                         //Alternative to using Gson
-                        ObjectInputStream in = new ObjectInputStream(inputStream);
                         try {
-                            Move curMove = (Move) in.readObject(); 
+
+                            //int[] coordinates = (int[]) in.readObject(); 
+                            ObjectInputStream in = new ObjectInputStream(inputStream);
+
+                            Move curMove = (Move) in.readObject();
+                            System.out.println("Received data from client " + curUid + ":" + curMove.getRow() + "," + curMove.getCol());
+ 
 
                             // try move
                             Tuple result = controller.userPressed(curMove.getRow(), curMove.getCol());
@@ -166,15 +178,18 @@ public class GameServer {
                 e.printStackTrace();
             }
             curNode = curNode.next;
+            System.out.println("Check next node");
         }
     }
 
     public static void main(String[] args) {
+        /*/
         if (args.length != 1) {
             System.out.println("Usage: java Game Server <port number>");
             System.exit(-1);
         }
-        int PORT_NUM = Integer.parseInt(args[0]);
+        */
+        int PORT_NUM = 21001; //Integer.parseInt(args[0]);
 
         Node curNode;
         Node nextNode;
@@ -183,13 +198,13 @@ public class GameServer {
 
         try {
             ServerSocket serverSocket = new ServerSocket(PORT_NUM);
-            serverSocket.setSoTimeout(100);
+           // serverSocket.setSoTimeout(100);
 
             System.out.println("Establishing connections");
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    clientSocket.setSoTimeout(100);
+                    //clientSocket.setSoTimeout(100);
 
                     users++;
                     String message;
@@ -198,7 +213,9 @@ public class GameServer {
                         head.next = null;
                         sender = head;
                         prevTurn = ChessPieceColor.W;
-                        prevUid = head.uid;
+                        curTurn = ChessPieceColor.W;
+                        curUid = head.uid;
+                        prevUid = 0;
                     } else {
                         curNode = findLastNode();
                         nextNode = new Node(clientSocket, users, "Player " + users);
