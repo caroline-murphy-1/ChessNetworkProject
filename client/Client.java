@@ -9,17 +9,20 @@ import java.util.Arrays;
 
 public class Client {
     private static ObjectOutputStream output;
+    private static Socket clientSocket;
 
     public static void main(String[] args) {
+        /*
         if (args.length < 2) {
             System.out.println("Usage: java TestClient <server IP> <port number>");
             return;
         }
-        String hostname = args[0];
-        int port = Integer.parseInt(args[1]);
+        */
+        String hostname = "127.0.0.1"; //args[0];
+        int port = 21001; // Integer.parseInt(args[1]);
 
-        try (Socket socket = new Socket(hostname, port)) {
-            output = new ObjectOutputStream(socket.getOutputStream());
+        try (Socket clientSocket = new Socket(hostname, port)) {
+            output = new ObjectOutputStream(clientSocket.getOutputStream());
             SwingUtilities.invokeLater(Client::tempGUI);
         } catch (IOException err) {
             System.out.println("I/O error: " + err.getMessage());
@@ -37,8 +40,20 @@ public class Client {
         public void actionPerformed(ActionEvent event) {
             System.out.println("Sending data to server: " + Arrays.toString(buttonValue));
             try {
-                output.writeObject(buttonValue);
-                output.flush();
+                // Serialize complex data to bytes
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bos);
+                out.writeObject(buttonValue);
+                out.flush();
+                byte[] bytes = bos.toByteArray();
+
+                output.write(bytes);
+
+                // Close resources
+                out.close();
+                bos.close();
+                output.close();
+                
             } catch (IOException err) {
                 System.out.println("I/O error: " + err.getMessage());
             }
