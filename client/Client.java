@@ -2,14 +2,19 @@ package client;
 
 import java.io.*;
 import java.net.*;
+import java.nio.ByteBuffer;
+
 import javax.swing.*;
+
+import server.model.Move;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
 
 public class Client {
-    private static ObjectOutputStream output;
-    private static Socket clientSocket;
+    private static ObjectOutputStream out;
+    private static ObjectInputStream in;
 
     public static void main(String[] args) {
         /*
@@ -21,11 +26,19 @@ public class Client {
         String hostname = "127.0.0.1"; //args[0];
         int port = 21001; // Integer.parseInt(args[1]);
 
-        try (Socket clientSocket = new Socket(hostname, port)) {
-            output = new ObjectOutputStream(clientSocket.getOutputStream());
+        try  {
+            Socket clientSocket = new Socket(hostname, port);
+            System.out.println("Connected to server.");
+
+             out = new ObjectOutputStream(clientSocket.getOutputStream());
+
+             // TODO implement how to handle response from server.
+             in = new ObjectInputStream(clientSocket.getInputStream());
+
+
             SwingUtilities.invokeLater(Client::tempGUI);
         } catch (IOException err) {
-            System.out.println("I/O error: " + err.getMessage());
+            System.out.println("I/O error creating socket: " + err.getMessage());
         }
     }
 
@@ -38,22 +51,18 @@ public class Client {
 
         @Override
         public void actionPerformed(ActionEvent event) {
-            System.out.println("Sending data to server: " + Arrays.toString(buttonValue));
             try {
+
+                Move move = new Move(buttonValue[0], buttonValue[1]);
+                System.out.println("Sending data to server: " + buttonValue[0] + buttonValue[1]);
+
+
                 // Serialize complex data to bytes
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ObjectOutputStream out = new ObjectOutputStream(bos);
-                out.writeObject(buttonValue);
-                out.flush();
-                byte[] bytes = bos.toByteArray();
+                out.writeObject(move);
 
-                output.write(bytes);
+                System.out.println("Data sent");
 
-                // Close resources
-                out.close();
-                bos.close();
-                output.close();
-                
+
             } catch (IOException err) {
                 System.out.println("I/O error: " + err.getMessage());
             }

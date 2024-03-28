@@ -1,17 +1,15 @@
 package server;
 
 import java.io.*;
-//import com.google.gson.Gson;
 
 import server.controller.Controller;
 import server.controller.Tuple;
-import server.model.Move;
 import server.model.ChessPieces.ChessPieceColor;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-
+/*
 class Node {
     Socket client;
     int uid;
@@ -75,12 +73,6 @@ public class GameServer {
         while (sendNode != null) {
             if (sendNode.client != sender.client) {
                 try {
-                    // Uncomment if using Gson
-                    /* 
-                    OutputStream outputStream = sendNode.client.getOutputStream();
-                    PrintWriter out = new PrintWriter(outputStream, true);
-                    out.println(move);
-                    */
 
                     // Serialize complex data to bytes
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -127,34 +119,22 @@ public class GameServer {
                     System.out.println("Cur Node Uid: " +curNode.uid);
                     // Determine whose move it is and send it
                     if (prevTurn == curTurn && prevUid != curUid && (curNode.uid == 1 || curNode.uid == 2)) {
-                        /* 
-                        // Receive JSON data
-                        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-                        String json = in.readLine();
 
-                        // Deserialize JSON to complex data object
-                        Gson gson = new Gson();
-                        Move curMove = gson.fromJson(json, Move.class);
-                        */
                         System.out.println("Passed the user check");
 
-
-                        //Alternative to using Gson
                         try {
 
-                            //int[] coordinates = (int[]) in.readObject(); 
+                            // deserialize inputStream
                             ObjectInputStream in = new ObjectInputStream(inputStream);
+                            int[] coordinates = (int[]) in.readObject(); 
 
-                            Move curMove = (Move) in.readObject();
-                            System.out.println("Received data from client " + curUid + ":" + curMove.getRow() + "," + curMove.getCol());
+                            //Move curMove = (Move) in.readObject();
+                            System.out.println("Received data from client " + curUid + ":" + coordinates[0] + "," + coordinates[1]);
  
 
                             // try move
-                            Tuple result = controller.userPressed(curMove.getRow(), curMove.getCol());
+                            Tuple result = controller.userPressed(coordinates[0], coordinates[1]);
                             curTurn = result.getCurrentPlayerColor();
-
-                            // convert result
-                            //String moveResult = gson.toJson(result);
 
                             // send result
                             sendMove(result);
@@ -171,6 +151,8 @@ public class GameServer {
                         
                         } catch(ClassNotFoundException e) {
                             e.printStackTrace();
+                        } catch(EOFException e) {
+                            System.out.println("Reached end of file");
                         }
                     }
                 }
@@ -183,12 +165,12 @@ public class GameServer {
     }
 
     public static void main(String[] args) {
-        /*/
+        
         if (args.length != 1) {
             System.out.println("Usage: java Game Server <port number>");
             System.exit(-1);
         }
-        */
+        
         int PORT_NUM = 21001; //Integer.parseInt(args[0]);
 
         Node curNode;
@@ -203,8 +185,9 @@ public class GameServer {
             System.out.println("Establishing connections");
             while (true) {
                 try {
+                    System.out.println("Waiting for socket connection");
                     Socket clientSocket = serverSocket.accept();
-                    //clientSocket.setSoTimeout(100);
+                    // clientSocket.setSoTimeout(100);
 
                     users++;
                     String message;
@@ -230,6 +213,7 @@ public class GameServer {
                     // Ignore timeout exceptions
                 }
                 playGame(controller);
+                System.out.println("playGame ended, restart while loop");
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -242,3 +226,4 @@ public class GameServer {
     }
 }
  
+*/
